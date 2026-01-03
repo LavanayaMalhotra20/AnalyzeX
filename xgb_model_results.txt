@@ -1,0 +1,34 @@
+Baseline Cross-Validation Scores: [0.89922481 0.91472868 0.92248062 0.9296875  0.8984375 ]
+Mean CV Accuracy: 0.913 (± 0.025)
+Training Time: 381.99 seconds
+Best Hyperparameters: {'colsample_bytree': 0.7, 'gamma': 0.2, 'learning_rate': 0.1, 'max_depth': 3, 'min_child_weight': 1, 'n_estimators': 200, 'subsample': 1.0}
+Best CV Accuracy: 0.927
+Test Set Accuracy: 0.944
+
+Classification Report:
+                 precision    recall  f1-score   support
+
+Non-Publishable       0.94      0.95      0.94        78
+    Publishable       0.95      0.94      0.95        83
+
+       accuracy                           0.94       161
+      macro avg       0.94      0.94      0.94       161
+   weighted avg       0.94      0.94      0.94       161
+
+Feature Importance:
+figures_to_text_ratio                      0.218213
+table_citation_presence                    0.170812
+title_abstract_consistency                 0.113568
+equation_density                           0.087824
+reference_count                            0.083467
+presence_of_opposite_number_of_sections    0.050841
+gunning_fog_index                          0.050031
+dale_chall                                 0.041123
+novelty_score                              0.040718
+table_density                              0.033834
+technical_jargon_score                     0.022759
+flesch_kincaid_grade_level                 0.022317
+smog_index                                 0.018282
+table_count                                0.017184
+no_of_columns_per_page_of_table            0.016652
+interdisciplinary_impact_score             0.012375
