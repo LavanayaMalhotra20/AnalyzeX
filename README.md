@@ -1,62 +1,111 @@
-# Research Paper Publishability Prediction System using RAG
+# 📄 Research Paper Publishability Classifier
 
-## Overview
-The **Research Paper Publishability Prediction System** aims to evaluate the publishability of academic papers using Natural Language Processing (NLP) and machine learning techniques. The system predicts whether a paper is publishable and classifies it to the most appropriate conference based on its content. It leverages linguistic, stylistic, and content-based features for classification, combined with a hybrid retrieval approach using **SentenceTransformer** embeddings and **BGE (Bidirectional Generative Embeddings)**.
+A machine learning pipeline that predicts whether a research paper is likely to be accepted at a top academic conference, based purely on **linguistic and readability features** extracted from the paper's text.
 
-## Features
-- **Publishability Prediction**: Classifies papers as publishable or non-publishable based on specific metrics.
-- **Conference Classification**: Recommends the most suitable conferences for a paper using a hybrid retrieval strategy.
-- **Explainability**: Provides a rationale for the classification using a generative AI model (Gemini) to ensure transparency.
-- **Feature Extraction**: Includes linguistic, stylistic, and content-based features like readability scores, sentence length variations, and lexical density.
+---
 
-## Workflow
+## 🧠 How It Works
 
-### 1. **Feature Extraction**
-   The system extracts the following key features from research papers:
-   - **Linguistic Features**: Flesch-Kincaid Grade Level, Gunning Fog Index, Coleman-Liau Index, Passive Voice Percentage.
-   - **Stylistic Features**: Average Sentence Length, Sentence Length Variation.
-   - **Content-Based Features**: Lexical Density, Perplexity.
+The classifier reads the first ~5,000 characters of a paper's PDF (abstract + introduction), extracts 8 writing-quality features, and uses a trained Logistic Regression model to predict publishability.
 
-   The text is extracted from PDF documents using the **PyPDF2** library and preprocessed (tokenization, stop word removal, lemmatization).
+**Features used:**
 
-### 2. **Dataset Preparation**
-   The dataset consists of labeled research papers:
-   - **Publishable Papers**: Papers from conferences like CVPR, EMNLP, KDD, NeurIPS, and TMLR.
-   - **Non-Publishable Papers**: Papers deemed non-publishable based on specific criteria.
-   
-   The dataset is processed, cleaned, and labeled, and the extracted features are stored in a CSV file.
+| Feature | Description |
+|---|---|
+| Gunning Fog Index | Vocabulary complexity (higher = harder) |
+| Flesch-Kincaid Grade Level | Reading grade level |
+| Coleman-Liau Index | Character-based readability (better for technical terms) |
+| Average Sentence Length | Mean words per sentence |
+| Sentence Length Variation | Std deviation of sentence lengths |
+| Passive Voice Percentage | Ratio of passive-voice sentences |
+| Lexical Density | Ratio of content words to total words |
+| Perplexity (bigram) | Structural predictability of writing |
 
-### 3. **Model Training**
-   The **Logistic Regression** model is used for classification due to its interpretability and suitability for small datasets. The features are scaled using **Min-Max Scaling**, and hyperparameter tuning is performed for optimization.
+---
 
-### 4. **Model Validation**
-   Validation strategies include **K-Fold Cross-Validation** and **Test-Train Split**, both yielding perfect scores (F1 Score, Accuracy: 1.00) due to the small dataset and linear separability of features.
+## 📦 Dataset
 
-### 5. **Research Paper Classification using RAG**
-   The classification system uses a hybrid retrieval approach, combining **SentenceTransformer** embeddings with **BGE** for semantic search. The system performs the following steps:
-   - **Document Processing**: Extracts text, chunks it, and stores embeddings in a **ChromaDB** vector store.
-   - **Ensemble Retrieval**: Retrieves similar papers using both SentenceTransformer and BGE models.
-   - **Conference Classification**: The top conference is predicted based on the similarity of papers.
-   - **Rationale Generation**: The **Gemini** model provides an explanation for the conference recommendation.
+Papers are downloaded directly from public conference proceedings:
 
-### 6. **Key Features**
-   - **Hybrid Search**: Uses both SentenceTransformer and BGE embeddings for accurate classification.
-   - **Explainability**: Provides reasoning behind the classification with Gemini model-generated rationales.
-   - **Publishability Filtering**: Only processes publishable papers, improving efficiency.
+- **Publishable** (~100 papers each): NeurIPS 2023, CVPR 2024, EMNLP 2024, ACL 2024, ICCV 2023
+- **Non-publishable** (~300 papers): arXiv papers filtered to exclude top-venue mentions, selected using queries targeting basic/survey/beginner-level work
 
-### 7. **Challenges and Future Improvements**
-   - **Scalability**: Optimization of the vector store and retrieval process for handling large datasets.
-   - **Improved Rationale Generation**: Enhancing the quality of rationale explanations.
-   - **Generalization**: Extending the model to classify papers for journals or grants, in addition to conferences.
+---
 
-## Requirements
-- Python 3.x
-- **Libraries**:
-  - PyPDF2
-  - SentenceTransformer
-  - ChromaDB
-  - scikit-learn
-  - pandas
-  - numpy
-  - matplotlib
-  - seaborn
+## 🗂️ Pipeline Overview
+
+```
+Step 1  → Install dependencies
+Step 2  → Download papers from NeurIPS, CVPR, EMNLP, ACL, ICCV, arXiv
+Step 3  → Load libraries and NLP tools (spaCy, NLTK, scikit-learn)
+Step 4  → Define feature extraction functions
+Step 5  → Extract features from all PDFs → save to CSV
+Step 6  → Prepare training data and binary labels
+Step 7  → Scale features (MinMaxScaler) and train Logistic Regression
+Step 8  → 5-fold cross-validation
+Step 9  → Feature importance analysis
+Step 10 → Save model and scaler as .pkl files
+Step 11 → Predict on new/test papers
+Step 12 → Visualise prediction probabilities
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+This notebook is designed to run on **Google Colab** (uses `/content/` paths).
+
+### Install dependencies
+
+```bash
+pip install PyPDF2 pdfminer.six textblob scipy gensim networkx nltk scikit-learn spacy
+python -m spacy download en_core_web_sm
+python -m nltk.downloader all
+```
+
+### Run the notebook
+
+Open `Main.ipynb` in Google Colab and run cells in order (Step 1 → Step 12).
+
+> ⚠️ **Note:** ICCV 2025 and EMNLP 2025 may not be published yet. The notebook defaults to ICCV 2023 and EMNLP 2024 as safe fallbacks.
+
+---
+
+## 📁 Output Files
+
+| File | Description |
+|---|---|
+| `new_training_features.csv` | Extracted features for all training papers |
+| `trained_model_v2.pkl` | Trained Logistic Regression model |
+| `scaler_v2.pkl` | Fitted MinMaxScaler |
+| `predicted_publishability_v2.csv` | Predictions on test papers with probabilities |
+
+---
+
+## 📊 Model
+
+- **Algorithm:** Logistic Regression (`C=4.28`, `solver=liblinear`, `class_weight=balanced`)
+- **Evaluation:** 5-fold cross-validation (F1 score + accuracy)
+- **Scaling:** MinMaxScaler fitted only on training data to prevent leakage
+
+---
+
+## 📚 Dependencies
+
+- `PyPDF2` — PDF text extraction
+- `spaCy` (`en_core_web_sm`) — NLP
+- `NLTK` — tokenisation, CMU pronouncing dictionary, stopwords
+- `scikit-learn` — model training and evaluation
+- `pandas`, `numpy` — data handling
+- `matplotlib`, `seaborn` — visualisation
+- `requests`, `beautifulsoup4` — paper scraping
+
+---
+
+## ⚠️ Limitations
+
+- Only the first ~5,000 characters of each paper are analysed (abstract + introduction).
+- The "non-publishable" label is a proxy — arXiv papers not rejected by any venue, just unlikely candidates based on content signals.
+- The model captures **writing style**, not scientific novelty or technical correctness.
